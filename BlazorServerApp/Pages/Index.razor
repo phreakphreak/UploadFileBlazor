@@ -1,0 +1,73 @@
+﻿@page "/"
+@inject IJSRuntime js;
+
+<PageTitle>Index</PageTitle>
+<InputFile OnChange="@OnChange" id="fileMusic" multiple/>
+<button @onclick="UploadFile">Upload</button>
+<div>
+    <p>@ErrorMessage</p>
+</div>
+
+<audio id="audio" controls></audio>
+
+
+<button @onclick="PlayFile">Play</button><h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<div id="reactProgressBar"></div>
+
+<InputFile type="file" id="uploadFile" />
+<button id="submit" @onclick="UploadFile">Upload File</button>
+<div id="status"></div>
+
+@code {
+    private int maxAllowedFiles = 2;
+    public List<IBrowserFile> browserFilesAudio { get; set; } = new List<IBrowserFile>();
+    public List<string> sourcesFilesAudio { get; set; } = new List<string>();
+    public ElementReference audio { get; set; }
+    private string ErrorMessage;
+
+
+    async Task PlayFile()
+    {
+        await js.InvokeVoidAsync("PlayAudioFile", "1");
+    }
+
+    async Task UploadFile()
+    {
+        await js.InvokeVoidAsync("uploadFile", "2");
+    }
+
+    async Task OnChange(InputFileChangeEventArgs e)
+    {
+        browserFilesAudio.Clear();
+        ErrorMessage = string.Empty;
+        if (e.FileCount > maxAllowedFiles)
+        {
+            ErrorMessage = $"Only {maxAllowedFiles} files can be uploaded";
+            return;
+        }
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            await using var stream = file.OpenReadStream(file.Size);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            browserFilesAudio.Add(file);
+
+    // sourcesFilesAudio.Add($"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}");
+        }
+    }
+
+    private int currentCount = 0;
+
+    private async void IncrementCount()
+    {
+        currentCount++;
+
+        await js.InvokeVoidAsync("RenderProgressBar", currentCount);
+    }
+
+}

@@ -1,0 +1,19 @@
+{
+  "name": "serverapinode",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@koa/cors": "^4.0.0",
+    "@koa/multer": "^3.0.0",
+    "@koa/router": "^12.0.0",
+    "fs-extra": "^10.1.0",
+    "koa": "^2.13.4",
+    "koa-static": "^5.0.0"
+  }
+}
