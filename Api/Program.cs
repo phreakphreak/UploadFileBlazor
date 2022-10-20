@@ -25,12 +25,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
 }
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "public", "upload")),
-    RequestPath = "/public"
-});
+// app.UseStaticFiles(new StaticFileOptions
+// {
+//     FileProvider = new PhysicalFileProvider(
+//         Path.Combine(builder.Environment.ContentRootPath, "public", "upload")),
+//     RequestPath = "/public"
+// });
+app.UseStaticFiles();
 
 app.UseHsts();
 app.UseHttpsRedirection();
