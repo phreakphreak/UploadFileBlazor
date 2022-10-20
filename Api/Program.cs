@@ -25,16 +25,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
 }
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "upload")),
-    RequestPath = "/public"
-});
-// app.UseStaticFiles();
+// app.UseStaticFiles(new StaticFileOptions
+// {
+//     FileProvider = new PhysicalFileProvider(
+//         Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "upload")),
+//     RequestPath = "/public"
+// });
+app.UseStaticFiles();
 
 app.UseHsts();
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.UseCors(MyConfigCors);
 
