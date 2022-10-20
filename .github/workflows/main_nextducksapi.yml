@@ -53,5 +53,5 @@ jobs:
         with:
           app-name: 'nextducksapi'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C9683C66C2164B6E8324467FE8C4A6ED }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_A77B8C9664C54B1CA4EC53498B60D72E }}
           package: .
