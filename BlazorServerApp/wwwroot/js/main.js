@@ -154,6 +154,7 @@ window.uploadFile= async()=> {
     file.name,
     fileMd5
   );
+  console.log("fileStatus",fileStatus)
   if (fileStatus.data && fileStatus.data.isExists) {
     alert("File has been uploaded");
     return;
@@ -164,7 +165,7 @@ window.uploadFile= async()=> {
       fileMd5,
       fileSize: file.size,
       chunkSize: 1 * 1024 * 1024,
-      chunkIds: fileStatus.data.chunkIds,
+      chunkIds: fileStatus.data?.chunkIds,
       poolLimit: 3,
     }
     console.log("Single Chunk: ",singleFile, +new Date())

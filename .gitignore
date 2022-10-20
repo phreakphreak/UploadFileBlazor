@@ -8,3 +8,4 @@ riderModule.iml
 **/node_modules/**/*
 **/tmp/**/*
 **/public/upload/**
+**/wwwroot/upload/**

@@ -28,7 +28,7 @@ const storage = multer.diskStorage({
     }
   },
   filename: function (req, file, cb) {
-    console.log(file);
+    console.log("file from multer",file);
     let chunkIndex = file.originalname.split("-")[1];
 
     cb(null, `${chunkIndex}`);
@@ -81,6 +81,8 @@ router.post(
   "/upload/single",
   multerUpload.single("file"),
   async (ctx, next) => {
+
+    console.log("single",ctx.file.originalname)
     ctx.body = {
       code: 1,
       data: ctx.file.originalname,
