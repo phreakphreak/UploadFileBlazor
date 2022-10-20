@@ -31,8 +31,12 @@ app.UseStaticFiles(new StaticFileOptions
         Path.Combine(builder.Environment.ContentRootPath, "public", "upload")),
     RequestPath = "/public"
 });
-app.UseCors(MyConfigCors);
+
+app.UseHsts();
 app.UseHttpsRedirection();
+
+
+app.UseCors(MyConfigCors);
 
 // app.Use(async (context, next) =>
 // {
