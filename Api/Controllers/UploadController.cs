@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -45,34 +46,7 @@ public class UploadController : ControllerBase
             return Ok(new ResponseData { data = new Data { isExists = false, chunkIds = new List<string>() } });
         }
     }
-    private byte[] GetBytes(Stream input)
-    {
-        byte[] buffer = new byte[input.Length];
-        using (MemoryStream ms = new MemoryStream())
-        {
-            int read;
-            while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
-            {
-                ms.Write(buffer, 0, read);
-            }
 
-            return ms.ToArray();
-        }
-    }
-    public static void SaveStreamAsFile(string filePath, Stream inputStream, string fileName)
-    {
-        DirectoryInfo info = new DirectoryInfo(filePath);
-        if (!info.Exists)
-        {
-            info.Create();
-        }
-
-        string path = Path.Combine(filePath, fileName);
-        using (FileStream outputFileStream = new FileStream(path, FileMode.Create))
-        {
-            inputStream.CopyTo(outputFileStream);
-        }
-    }
     [HttpPost]
     [Route("single")]
     public async Task<IActionResult> Upload()
@@ -88,21 +62,27 @@ public class UploadController : ControllerBase
         return Ok(new SingleDataResponse { data = file.FileName });
     }
 
-    public async Task CombineMultipleFiles(string sourceDir, string targetPath)
+    public async Task CombineMultipleFiles(string sourceDir, string targetPath,string fileName)
     {
+        var connString = "DefaultEndpointsProtocol=https;AccountName=nextducksstorage;AccountKey=nMLjle1sDwycuWBsTHQH+j6C1CpZWJ3kfN9bJ7RvnmsckAztQQzuo8SxFCgvwBvHYb58B6In20Y9+AStqGct6A==;EndpointSuffix=core.windows.net";
+        var containerName = "musicfiles";
+        var container = new BlobContainerClient(connString, containerName);
+        var blob = container.GetBlobClient(fileName);
+        
         var files = Directory.GetFiles(sourceDir);
         var result = files.Where(file => IGNORES.IndexOf(file) == -1)
                         .Select(file => Convert.ToInt32(file.Split("/").Reverse().ToList()[0]))
                         .ToList();
         result!.Sort((a, b) => a.CompareTo(b));
 
-        using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
+        // using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
         foreach (var file in result)
         {
             var filePath = Path.Combine(sourceDir, file.ToString());
 
             using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            await fileStream.CopyToAsync(writeStream);
+            // await fileStream.CopyToAsync(writeStream);
+            await blob.UploadAsync(fileStream);
         }
     }
 
@@ -112,7 +92,8 @@ public class UploadController : ControllerBase
     {
         await CombineMultipleFiles(
             Path.Combine(TMP_DIR, fileDto.fileMd5!),
-            Path.Combine(UPLOAD_DIR, fileDto.fileName!)
+            Path.Combine(UPLOAD_DIR, fileDto.fileName!),
+            fileDto.fileName!
         );
 
         return Ok(new ResponseData
