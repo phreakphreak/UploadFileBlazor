@@ -64,25 +64,33 @@ public class UploadController : ControllerBase
 
     public async Task CombineMultipleFiles(string sourceDir, string targetPath,string fileName)
     {
-        var connString = "DefaultEndpointsProtocol=https;AccountName=nextducksstorage;AccountKey=nMLjle1sDwycuWBsTHQH+j6C1CpZWJ3kfN9bJ7RvnmsckAztQQzuo8SxFCgvwBvHYb58B6In20Y9+AStqGct6A==;EndpointSuffix=core.windows.net";
-        var containerName = "musicfiles";
-        var container = new BlobContainerClient(connString, containerName);
-        var blob = container.GetBlobClient(fileName);
-        
-        var files = Directory.GetFiles(sourceDir);
-        var result = files.Where(file => IGNORES.IndexOf(file) == -1)
-                        .Select(file => Convert.ToInt32(file.Split("/").Reverse().ToList()[0]))
-                        .ToList();
-        result!.Sort((a, b) => a.CompareTo(b));
-
-        // using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
-        foreach (var file in result)
+        try
         {
-            var filePath = Path.Combine(sourceDir, file.ToString());
+            var connString =
+                "DefaultEndpointsProtocol=https;AccountName=nextducksstorage;AccountKey=nMLjle1sDwycuWBsTHQH+j6C1CpZWJ3kfN9bJ7RvnmsckAztQQzuo8SxFCgvwBvHYb58B6In20Y9+AStqGct6A==;EndpointSuffix=core.windows.net";
+            var containerName = "musicfiles";
+            var container = new BlobContainerClient(connString, containerName);
+            var blob = container.GetBlobClient(fileName);
 
-            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            // await fileStream.CopyToAsync(writeStream);
-            await blob.UploadAsync(fileStream);
+            var files = Directory.GetFiles(sourceDir);
+            var result = files.Where(file => IGNORES.IndexOf(file) == -1)
+                .Select(file => Convert.ToInt32(file.Split("/").Reverse().ToList()[0]))
+                .ToList();
+            result!.Sort((a, b) => a.CompareTo(b));
+
+            // using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
+            foreach (var file in result)
+            {
+                var filePath = Path.Combine(sourceDir, file.ToString());
+                Console.WriteLine(filePath);
+                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                // await fileStream.CopyToAsync(writeStream);
+                await blob.UploadAsync(fileStream);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
         }
     }
 
