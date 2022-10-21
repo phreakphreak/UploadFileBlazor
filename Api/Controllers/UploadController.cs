@@ -84,7 +84,7 @@ public class UploadController : ControllerBase
             
             var container = new BlobContainerClient(connString, containerName);
             await container.CreateIfNotExistsAsync();
-            var blob = container.GetBlockBlobClient(fileName);
+            var blob = container.GetBlobClient(fileName);
 
             var files = Directory.GetFiles(sourceDir);
             var result = files.Where(file => IGNORES.IndexOf(file) == -1)
