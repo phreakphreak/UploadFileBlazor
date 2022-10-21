@@ -1,3 +1,4 @@
+using System.Text;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.AspNetCore.Mvc;
@@ -48,6 +49,16 @@ public class UploadController : ControllerBase
         }
     }
 
+
+    [HttpPost]
+    [Route("singleChunk")]
+    public async Task<IActionResult> UploadChunk()
+    {
+        var tempPath = TMP_DIR;
+        return Ok("");
+    }
+    
+
     [HttpPost]
     [Route("single")]
     public async Task<IActionResult> Upload()
@@ -67,13 +78,12 @@ public class UploadController : ControllerBase
     {
         try
         {
-       
-            long size = 0;
             var connString =
                 "DefaultEndpointsProtocol=https;AccountName=nextducksstorage;AccountKey=nMLjle1sDwycuWBsTHQH+j6C1CpZWJ3kfN9bJ7RvnmsckAztQQzuo8SxFCgvwBvHYb58B6In20Y9+AStqGct6A==;EndpointSuffix=core.windows.net";
             var containerName = "musicfiles";
-            var manager = new UploadManager(connString);
+            
             var container = new BlobContainerClient(connString, containerName);
+            await container.CreateIfNotExistsAsync();
             var blob = container.GetBlockBlobClient(fileName);
 
             var files = Directory.GetFiles(sourceDir);
@@ -82,17 +92,16 @@ public class UploadController : ControllerBase
                 .ToList();
             result!.Sort((a, b) => a.CompareTo(b));
 
-            // using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
+            using var stream = new MemoryStream();
             foreach (var file in result)
             {
-                
-                
                 var filePath = Path.Combine(sourceDir, file.ToString());
-                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                // await fileStream.CopyToAsync(writeStream);
-                // await blob.UploadAsync(fileStream);
-                await manager.UploadStreamAsync(fileStream, fileName);
+                await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                await fileStream.CopyToAsync(stream);
+               
             }
+
+            await blob.UploadAsync(stream);
         }
         catch (Exception e)
         {
@@ -127,6 +136,13 @@ public class Data
     public string? url { get; set; }
     public List<string>? chunkIds { get; set; }
 
+}public class ChunkMetadata {
+    public int Index { get; set; }
+    public int TotalCount { get; set; }
+    public int FileSize { get; set; }
+    public string FileName { get; set; }
+    public string FileType { get; set; }
+    public string FileGuid { get; set; }
 }
 
 public class SingleDataResponse
