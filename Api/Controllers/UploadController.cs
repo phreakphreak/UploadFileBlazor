@@ -88,7 +88,6 @@ public class UploadController : ControllerBase
                 
                 
                 var filePath = Path.Combine(sourceDir, file.ToString());
-                Console.WriteLine(filePath);
                 using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                 // await fileStream.CopyToAsync(writeStream);
                 // await blob.UploadAsync(fileStream);
@@ -97,7 +96,7 @@ public class UploadController : ControllerBase
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            System.Diagnostics.Debug.WriteLine(e.Message);
              // Response.Clear();
         }
     }
