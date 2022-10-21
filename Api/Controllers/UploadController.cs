@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Specialized;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -66,11 +67,14 @@ public class UploadController : ControllerBase
     {
         try
         {
+       
+            long size = 0;
             var connString =
                 "DefaultEndpointsProtocol=https;AccountName=nextducksstorage;AccountKey=nMLjle1sDwycuWBsTHQH+j6C1CpZWJ3kfN9bJ7RvnmsckAztQQzuo8SxFCgvwBvHYb58B6In20Y9+AStqGct6A==;EndpointSuffix=core.windows.net";
             var containerName = "musicfiles";
+            var manager = new UploadManager(connString);
             var container = new BlobContainerClient(connString, containerName);
-            var blob = container.GetBlobClient(fileName);
+            var blob = container.GetBlockBlobClient(fileName);
 
             var files = Directory.GetFiles(sourceDir);
             var result = files.Where(file => IGNORES.IndexOf(file) == -1)
@@ -81,16 +85,20 @@ public class UploadController : ControllerBase
             // using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
             foreach (var file in result)
             {
+                
+                
                 var filePath = Path.Combine(sourceDir, file.ToString());
                 Console.WriteLine(filePath);
                 using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                 // await fileStream.CopyToAsync(writeStream);
-                await blob.UploadAsync(fileStream);
+                // await blob.UploadAsync(fileStream);
+                await manager.UploadStreamAsync(fileStream, fileName);
             }
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
+             // Response.Clear();
         }
     }
 
