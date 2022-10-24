@@ -54,6 +54,7 @@ public class UploadController : ControllerBase
     [Route("singleChunk")]
     public async Task<IActionResult> UploadChunk()
     {
+        var url = "https://nextducksstorage.blob.core.windows.net/musicfiles";
         var tempPath = TMP_DIR;
         return Ok("");
     }
@@ -74,7 +75,7 @@ public class UploadController : ControllerBase
         return Ok(new SingleDataResponse { data = file.FileName });
     }
 
-    public async Task CombineMultipleFiles(string sourceDir, string targetPath,string fileName)
+    public async Task CombineMultipleFiles(string sourceDir, string targetPath,string fileName,string md5="")
     {
         try
         {
@@ -83,28 +84,40 @@ public class UploadController : ControllerBase
             var containerName = "musicfiles";
             
             var container = new BlobContainerClient(connString, containerName);
+            
             await container.CreateIfNotExistsAsync();
-            var blob = container.GetBlobClient(fileName);
+            var blob = container.GetBlockBlobClient(fileName);
 
             var files = Directory.GetFiles(sourceDir);
             var result = files.Where(file => IGNORES.IndexOf(file) == -1)
                 .Select(file => Convert.ToInt32(file.Split("/").Reverse().ToList()[0]))
                 .ToList();
             result!.Sort((a, b) => a.CompareTo(b));
-
+            List<string> blockList = new List<string>();
             using var stream = new MemoryStream();
             foreach (var file in result)
             {
+                
                 var filePath = Path.Combine(sourceDir, file.ToString());
+                var blockId = Convert.ToBase64String(Encoding.UTF8.GetBytes(md5+"-"+file.ToString()));
+                
                 await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                // fileStream.Position = 0;
+                
                 await fileStream.CopyToAsync(stream);
-               
+                stream.Position = 0;
+                await blob.StageBlockAsync(blockId,fileStream); // UploadAsync(stream);
+                blockList.Add(blockId);
+
             }
 
-            await blob.UploadAsync(stream);
+            await blob.CommitBlockListAsync(blockList);
+
+            // stream.Close();
         }
         catch (Exception e)
         {
+            Console.WriteLine(e.Message);
             System.Diagnostics.Debug.WriteLine(e.Message);
              // Response.Clear();
         }
@@ -117,7 +130,8 @@ public class UploadController : ControllerBase
         await CombineMultipleFiles(
             Path.Combine(TMP_DIR, fileDto.fileMd5!),
             Path.Combine(UPLOAD_DIR, fileDto.fileName!),
-            fileDto.fileName!
+            fileDto.fileName!,
+            fileDto.fileMd5!
         );
 
         return Ok(new ResponseData

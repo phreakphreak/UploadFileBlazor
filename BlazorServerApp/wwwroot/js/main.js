@@ -49,8 +49,8 @@ function calcFileMD5(file) {
     };
 
     function loadNext() {
-      let start = currentChunk * chunkSize,
-        end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+      let start = currentChunk * chunkSize;
+      let end = start + chunkSize >= file.size ? file.size : start + chunkSize;
       fileReader.readAsArrayBuffer(file.slice(start, end));
     }
     loadNext();
@@ -63,14 +63,14 @@ async function asyncPool(concurrency, iterable, iteratorFn) {
   for (const item of iterable) {
     // Call the iteratorFn function to create an asynchronous task
     const p = Promise.resolve().then(() => iteratorFn(item, iterable));
-    
+
     ret.push(p); // save new async task
     executing.add(p); // Save an executing asynchronous task
-    
+
     const clean = () => executing.delete(p);
     p.then(clean).catch(clean);
     if (executing.size >= concurrency) {
-      // Wait for faster task execution to complete 
+      // Wait for faster task execution to complete
       await Promise.race(executing);
     }
   }
@@ -88,7 +88,9 @@ function checkFileExist(url, name, md5) {
 }
 
 const request = axios.create({
-  baseURL: "https://nextducksapi.azurewebsites.net/upload",
+  // baseURL: "https://nextducksapi.azurewebsites.net/upload",
+  baseURL: "http://localhost:3000/upload",
+
   // timeout: 30000,
 });
 
@@ -125,14 +127,18 @@ function uploadChunk({ url, chunk, chunkIndex, fileMd5, fileName }) {
   formData.set("file", chunk, fileMd5 + "-" + chunkIndex);
   formData.set("name", fileName);
   formData.set("timestamp", Date.now());
-  console.log(">>> formData: ",formData)
+  console.log(">>> formData: ", formData);
   let config = {
-    onUploadProgress: function(progressEvent) {
-      document.getElementById("status").innerHTML = `<p>${Math.round( (progressEvent.loaded * 100) / progressEvent.total )}</p>`
-      window.RenderProgressBar(Math.round( (progressEvent.loaded * 100) / progressEvent.total ));
-    }
+    onUploadProgress: function (progressEvent) {
+      document.getElementById("status").innerHTML = `<p>${Math.round(
+        (progressEvent.loaded * 100) / progressEvent.total
+      )}</p>`;
+      window.RenderProgressBar(
+        Math.round((progressEvent.loaded * 100) / progressEvent.total)
+      );
+    },
   };
-  return request.post(url, formData,config)
+  return request.post(url, formData, config);
 }
 
 function concatFiles(url, name, md5) {
@@ -143,8 +149,8 @@ function concatFiles(url, name, md5) {
     },
   });
 }
-window.uploadFile= async()=> {
-  let uploadFileEle =  document.getElementById("uploadFile")
+window.uploadFile = async () => {
+  let uploadFileEle = document.getElementById("uploadFile");
   if (!uploadFileEle.files.length) return;
   const file = uploadFileEle.files[0];
   const fileMd5 = await calcFileMD5(file); // Calculate the MD5 of the file
@@ -154,7 +160,7 @@ window.uploadFile= async()=> {
     file.name,
     fileMd5
   );
-  console.log("fileStatus",fileStatus)
+  console.log("fileStatus", fileStatus);
   if (fileStatus.data && fileStatus.data.isExists) {
     alert("File has been uploaded");
     return;
@@ -167,10 +173,10 @@ window.uploadFile= async()=> {
       chunkSize: 1 * 1024 * 1024,
       chunkIds: fileStatus.data?.chunkIds,
       poolLimit: 3,
-    }
-    console.log("Single Chunk: ",singleFile, +new Date())
+    };
+    console.log("Single Chunk: ", singleFile, +new Date());
     const response = await upload(singleFile);
-    console.log("Response: ",response)
+    console.log("Response: ", response);
   }
   const fileData = await concatFiles("/concatFiles", file.name, fileMd5);
   const {
@@ -179,5 +185,4 @@ window.uploadFile= async()=> {
     },
   } = fileData;
   alert(`Uploaded file url is: ${url}`);
-}
-
+};
