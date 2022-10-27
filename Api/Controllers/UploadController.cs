@@ -84,9 +84,9 @@ public class UploadController : ControllerBase
         {
             var files = Directory.GetFiles(sourceDir);
             var result = files.Where(file => IGNORES.IndexOf(file) == -1)
-                .Select(file =>  Convert.ToInt32(file.Split("/").Reverse().ToList()[0]))
+                .Select((file,index) => index)
                 .ToList();
-            result!.Sort((a, b) => a.CompareTo(b));
+            // result!.Sort((a, b) => a.CompareTo(b));
 
             await using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
             // await using var writeStream = System.IO.File.OpenWrite(targetPath);
