@@ -14,9 +14,10 @@ public class UploadController : ControllerBase
 
     // static readonly string BASE_DIR = Path.GetFullPath(Directory.GetCurrentDirectory());
     static readonly string BASE_DIR = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-    readonly string UPLOAD_DIR = Path.Combine(BASE_DIR, "upload");
-    readonly string TMP_DIR = Path.Combine(BASE_DIR, "tmp");
+    readonly string UPLOAD_DIR = Path.Join(BASE_DIR, "upload");
+    readonly string TMP_DIR = Path.Join(BASE_DIR, "tmp");
     readonly List<string> IGNORES = new() { ".DS_STORE" };
+    
 
     [HttpGet]
     [Route("exists")]
@@ -88,6 +89,8 @@ public class UploadController : ControllerBase
         await using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
         foreach (var filePath in result.Select(file => Path.Combine(sourceDir, file.ToString())))
         {
+            var exists = System.IO.File.Exists(filePath);
+            if (!exists) throw new Exception("ruta de archivo innacessible: " + filePath);
             await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
             await fileStream.CopyToAsync(writeStream);
         }
@@ -101,6 +104,8 @@ public class UploadController : ControllerBase
         {
             var targetPath = Path.Combine(UPLOAD_DIR, fileDto.fileName!);
             var sourceDir = Path.Combine(TMP_DIR, fileDto.fileMd5!);
+            
+            System.Diagnostics.Debug.WriteLine(targetPath);
             Console.WriteLine(">>>PATH" + Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
             await CombineMultipleFiles(sourceDir,targetPath);
             // string RutaURL = await _azureStorageHelper.UploadFile(targetPath, true, "StorageFotoContainer");
