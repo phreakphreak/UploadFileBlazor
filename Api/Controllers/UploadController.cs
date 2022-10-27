@@ -12,8 +12,8 @@ namespace Api.Controllers;
 public class UploadController : ControllerBase
 {
 
-    // static readonly string BASE_DIR = Path.GetFullPath(Directory.GetCurrentDirectory());
-    static readonly string BASE_DIR = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+    static readonly string BASE_DIR = Path.GetFullPath(Directory.GetCurrentDirectory());
+    // static readonly string BASE_DIR = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
     readonly string UPLOAD_DIR = Path.Join(BASE_DIR, "upload");
     readonly string TMP_DIR = Path.Join(BASE_DIR, "tmp");
     readonly List<string> IGNORES = new() { ".DS_STORE" };
@@ -103,14 +103,9 @@ public class UploadController : ControllerBase
     {
         try
         {
-            var tempDirectoryPath = Environment.GetEnvironmentVariable("TEMP");
-            // var filePath = Path.Combine(tempDirectoryPath, Request.Files["file"]);
-            // var folder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-            var targetPath = String.IsNullOrEmpty(tempDirectoryPath)? Path.Combine(UPLOAD_DIR, fileDto.fileName!): Path.Combine(tempDirectoryPath, fileDto.fileName! );
             
-            Console.WriteLine(">>>Target:"+targetPath);
-            // var targetPath = Path.Combine(UPLOAD_DIR, fileDto.fileName!);
-            var sourceDir = Path.Combine(TMP_DIR, fileDto.fileMd5!);
+            var targetPath = Path.GetFullPath(Path.Combine(UPLOAD_DIR, fileDto.fileName!));
+            var sourceDir = Path.GetFullPath(Path.Combine(TMP_DIR, fileDto.fileMd5!));
             
             System.Diagnostics.Debug.WriteLine(targetPath);
             Console.WriteLine(">>>PATH" + Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
