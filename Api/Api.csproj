@@ -17,4 +17,10 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\upload\livail-oasis.wav" />
+      <_ContentIncludedByDefault Remove="wwwroot\upload\retro-city.wav" />
+      <_ContentIncludedByDefault Remove="wwwroot\upload\the-rhythm-of-the-africa.wav" />
+    </ItemGroup>
+
 </Project>
