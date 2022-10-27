@@ -85,7 +85,7 @@ public class UploadController : ControllerBase
             .Select(file => Convert.ToInt32(file.Split("/").Reverse().ToList()[0]))
             .ToList();
         result!.Sort((a, b) => a.CompareTo(b));
-
+        
         await using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
         foreach (var filePath in result.Select(file => Path.Combine(sourceDir, file.ToString())))
         {
@@ -102,7 +102,8 @@ public class UploadController : ControllerBase
     {
         try
         {
-            var targetPath = Path.Combine(UPLOAD_DIR, fileDto.fileName!);
+            // var targetPath = Path.Combine(UPLOAD_DIR, fileDto.fileName!);
+            var targetPath = $"{BASE_DIR}\\upload\\{fileDto.fileName!}";
             var sourceDir = Path.Combine(TMP_DIR, fileDto.fileMd5!);
             
             System.Diagnostics.Debug.WriteLine(targetPath);
