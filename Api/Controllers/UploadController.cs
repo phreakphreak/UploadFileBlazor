@@ -103,13 +103,22 @@ public class UploadController : ControllerBase
     {
         try
         {
-            var targetPath = Path.Combine(UPLOAD_DIR, fileDto.fileName!);
+            var tempDirectoryPath = Environment.GetEnvironmentVariable("TEMP");
+            // var filePath = Path.Combine(tempDirectoryPath, Request.Files["file"]);
+            // var folder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            var targetPath = String.IsNullOrEmpty(tempDirectoryPath)? Path.Combine(UPLOAD_DIR, fileDto.fileName!): Path.Combine(tempDirectoryPath, fileDto.fileName! );
+            
+            Console.WriteLine(">>>Target:"+targetPath);
+            // var targetPath = Path.Combine(UPLOAD_DIR, fileDto.fileName!);
             var sourceDir = Path.Combine(TMP_DIR, fileDto.fileMd5!);
             
             System.Diagnostics.Debug.WriteLine(targetPath);
             Console.WriteLine(">>>PATH" + Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
             await CombineMultipleFiles(sourceDir,targetPath);
             // string RutaURL = await _azureStorageHelper.UploadFile(targetPath, true, "StorageFotoContainer");
+            
+            
+            
             return Ok(new ResponseData
             {
                 data = new Data
