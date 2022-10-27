@@ -120,6 +120,7 @@ public class UploadController : ControllerBase
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Trace.WriteLine(ex);
             return Ok(ex.Message);
         }
         

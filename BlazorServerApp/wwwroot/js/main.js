@@ -88,8 +88,8 @@ function checkFileExist(url, name, md5) {
 }
 
 const request = axios.create({
-  // baseURL: "https://nextducksapi.azurewebsites.net/upload",
-  baseURL: "http://localhost:3000/upload",
+  baseURL: "https://nextducksapi.azurewebsites.net/upload",
+  // baseURL: "http://localhost:3000/upload",
 
   // timeout: 30000,
 });
