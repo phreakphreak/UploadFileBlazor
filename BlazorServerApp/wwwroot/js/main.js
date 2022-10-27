@@ -150,39 +150,45 @@ function concatFiles(url, name, md5) {
   });
 }
 window.uploadFile = async () => {
-  let uploadFileEle = document.getElementById("uploadFile");
-  if (!uploadFileEle.files.length) return;
-  const file = uploadFileEle.files[0];
-  const fileMd5 = await calcFileMD5(file); // Calculate the MD5 of the file
-  const fileStatus = await checkFileExist(
-    // Check if the file already exists
-    "/exists",
-    file.name,
-    fileMd5
-  );
-  console.log("fileStatus", fileStatus);
-  if (fileStatus.data && fileStatus.data.isExists) {
-    alert("File has been uploaded");
-    return;
-  } else {
-    const singleFile = {
-      url: "/single",
-      file,
-      fileMd5,
-      fileSize: file.size,
-      chunkSize: 1 * 1024 * 1024,
-      chunkIds: fileStatus.data?.chunkIds,
-      poolLimit: 3,
-    };
-    console.log("Single Chunk: ", singleFile, +new Date());
-    const response = await upload(singleFile);
-    console.log("Response: ", response);
-  }
-  const fileData = await concatFiles("/concatFiles", file.name, fileMd5);
-  const {
-    data: {
-      data: { url },
-    },
-  } = fileData;
-  alert(`Uploaded file url is: ${url}`);
+ try{
+   let uploadFileEle = document.getElementById("uploadFile");
+   if (!uploadFileEle.files.length) return;
+   const file = uploadFileEle.files[0];
+   const fileMd5 = await calcFileMD5(file); // Calculate the MD5 of the file
+   const fileStatus = await checkFileExist(
+       // Check if the file already exists
+       "/exists",
+       file.name,
+       fileMd5
+   );
+   console.log("fileStatus", fileStatus);
+   if (fileStatus.data && fileStatus.data.isExists) {
+     alert("File has been uploaded");
+     return;
+   } else {
+     const singleFile = {
+       url: "/single",
+       file,
+       fileMd5,
+       fileSize: file.size,
+       chunkSize: 1 * 1024 * 1024,
+       chunkIds: fileStatus.data?.chunkIds,
+       poolLimit: 3,
+     };
+     console.log("Single Chunk: ", singleFile, +new Date());
+     const response = await upload(singleFile);
+     console.log("Response: ", response);
+   }
+   const fileData = await concatFiles("/concatFiles", file.name, fileMd5);
+   console.log(">>>filedata",fileData);
+   const {
+     data: {
+       data: { url },
+     },
+   } = fileData;
+   alert(`Uploaded file url is: ${url}`);
+ }
+ catch(e){
+   console.error(e)
+ }
 };

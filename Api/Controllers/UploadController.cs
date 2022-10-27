@@ -80,21 +80,30 @@ public class UploadController : ControllerBase
 
     public async Task CombineMultipleFiles(string sourceDir, string targetPath)
     {
-        var files = Directory.GetFiles(sourceDir);
-        var result = files.Where(file => IGNORES.IndexOf(file) == -1)
-            .Select(file => Convert.ToInt32(file.Split("/").Reverse().ToList()[0]))
-            .ToList();
-        result!.Sort((a, b) => a.CompareTo(b));
-        
-        // await using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
-        await using var writeStream = System.IO.File.OpenWrite(targetPath);
-        foreach (var filePath in result.Select(file => Path.Combine(sourceDir, file.ToString())))
+        try
         {
-            var exists = System.IO.File.Exists(filePath);
-            if (!exists) throw new Exception("ruta de archivo innacessible: " + filePath);
-            await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            await fileStream.CopyToAsync(writeStream);
+            var files = Directory.GetFiles(sourceDir);
+            var result = files.Where(file => IGNORES.IndexOf(file) == -1)
+                .Select(file =>  Convert.ToInt32(file.Split("/").Reverse().ToList()[0]))
+                .ToList();
+            result!.Sort((a, b) => a.CompareTo(b));
+
+            await using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
+            // await using var writeStream = System.IO.File.OpenWrite(targetPath);
+            foreach (var filePath in result.Select(num => Path.Combine(sourceDir, $"{num}")))
+            {
+                var exists = System.IO.File.Exists(filePath);
+                if (!exists) throw new Exception("ruta de archivo innacessible: " + filePath);
+                await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                await fileStream.CopyToAsync(writeStream);
+            }
         }
+
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+
     }
 
     [HttpGet]
@@ -111,9 +120,7 @@ public class UploadController : ControllerBase
             Console.WriteLine(">>>PATH" + Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
             await CombineMultipleFiles(sourceDir,targetPath);
             // string RutaURL = await _azureStorageHelper.UploadFile(targetPath, true, "StorageFotoContainer");
-            
-            
-            
+
             return Ok(new ResponseData
             {
                 data = new Data
@@ -125,7 +132,7 @@ public class UploadController : ControllerBase
         catch (Exception ex)
         {
             System.Diagnostics.Trace.WriteLine(ex);
-            return Ok(ex);
+            return Ok(ex.Message);
         }
         
     }
