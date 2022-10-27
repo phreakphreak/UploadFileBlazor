@@ -86,7 +86,8 @@ public class UploadController : ControllerBase
             .ToList();
         result!.Sort((a, b) => a.CompareTo(b));
         
-        await using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
+        // await using var writeStream = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite);
+        await using var writeStream = System.IO.File.OpenWrite(targetPath);
         foreach (var filePath in result.Select(file => Path.Combine(sourceDir, file.ToString())))
         {
             var exists = System.IO.File.Exists(filePath);
@@ -102,8 +103,7 @@ public class UploadController : ControllerBase
     {
         try
         {
-            // var targetPath = Path.Combine(UPLOAD_DIR, fileDto.fileName!);
-            var targetPath = $"{BASE_DIR}\\upload\\{fileDto.fileName!}";
+            var targetPath = Path.Combine(UPLOAD_DIR, fileDto.fileName!);
             var sourceDir = Path.Combine(TMP_DIR, fileDto.fileMd5!);
             
             System.Diagnostics.Debug.WriteLine(targetPath);
